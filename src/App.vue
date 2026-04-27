@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatDate } from './lib/util'
 
 type Priority = 'high' | 'medium' | 'low'
 
@@ -35,6 +36,19 @@ function addTodo() {
 
   newTodo.value = ''
 }
+
+function getPriorityColor(priority: Priority) {
+  return priorityList.find((p) => p.value === priority)!.color
+}
+
+function toggleTodo(id: number) {
+  const todo = todos.value.find((t) => t.id === id)
+  if (todo) todo.completed = !todo.completed
+}
+
+function deleteTodo(id: number) {
+  todos.value = todos.value.filter((t) => t.id !== id)
+}
 </script>
 
 <template>
@@ -44,6 +58,18 @@ function addTodo() {
       <h1>Vue-TodoList</h1>
       <p>管理您的日常任务，保持高效</p>
       <div class="input-wrapper">
+        <button class="add-btn" title="添加任务" @click="addTodo">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
         <input v-model="newTodo" type="text" placeholder="添加新任务..." @keyup.enter="addTodo" />
         <div class="priority">
           <button
@@ -78,10 +104,86 @@ function addTodo() {
           </button>
         </div>
       </div>
+      <div class="todo-title">
+        <span>待办</span>
+        <span>创建时间</span>
+      </div>
       <div class="todo-list">
         <ul>
-          <li v-for="todo in todos" :key="todo.id">
-            {{ todo.text }}
+          <li v-for="todo in todos" :key="todo.id" :class="{ completed: todo.completed }">
+            <span
+              class="priority-dot"
+              :style="{ background: getPriorityColor(todo.priority) }"
+            ></span>
+            <button
+              class="check-btn"
+              :title="todo.completed ? '撤回' : '完成'"
+              @click="toggleTodo(todo.id)"
+            >
+              <svg
+                v-if="!todo.completed"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12L10 17L19 7"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <svg
+                v-else
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 7H15C17.7614 7 20 9.23858 20 12C20 14.7614 17.7614 17 15 17H12"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7 4L4 7L7 10"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <span class="todo-text">{{ todo.text }}</span>
+            <span class="todo-date">{{ formatDate(todo.createdAt) }}</span>
+            <button class="delete-btn" title="删除" @click="deleteTodo(todo.id)">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18 6L6 18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M6 6L18 18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
           </li>
         </ul>
       </div>
@@ -123,6 +225,7 @@ main {
   position: relative;
   z-index: 1;
   padding-top: 140px;
+  padding-bottom: 80px;
   text-align: center;
   max-width: 560px;
   margin: 0 auto;
@@ -147,11 +250,12 @@ main {
 .input-wrapper {
   position: relative;
   width: 100%;
+  margin-bottom: 28px;
 }
 
 .todo input[type='text'] {
   width: 100%;
-  padding: 10px 144px 10px 14px;
+  padding: 10px 112px 10px 40px;
   font-size: 0.875rem;
   color: #1c1917;
   background: rgba(255, 255, 255, 0.7);
@@ -180,6 +284,31 @@ main {
   box-shadow:
     0 0 0 3px rgba(99, 102, 241, 0.15),
     0 2px 12px rgba(99, 102, 241, 0.1);
+}
+
+.add-btn {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #a8a29e;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.add-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #6366f1;
 }
 
 .priority {
@@ -218,11 +347,17 @@ main {
   transition: all 0.2s ease;
 }
 
-.todo-list {
-  margin-top: 24px;
-  height: 60dvh;
-  overflow: auto;
-  scroll-behavior: smooth;
+.todo-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a8a29e;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e7e5e4;
+  margin-bottom: 12px;
 }
 
 .todo-list ul {
@@ -230,11 +365,12 @@ main {
   text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .todo-list ul li {
-  padding: 10px 14px;
+  position: relative;
+  padding: 10px 12px;
   font-size: 0.875rem;
   color: #1c1917;
   background: rgba(255, 255, 255, 0.7);
@@ -247,10 +383,102 @@ main {
   user-select: none;
   cursor: pointer;
   transition: all 0.25s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .todo-list ul li:hover {
   border-color: #d6d3d1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.todo-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: 4px;
+}
+
+.priority-dot {
+  flex-shrink: 0;
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0.85;
+  margin-left: 6px;
+}
+
+.check-btn,
+.delete-btn {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #a8a29e;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.check-btn {
+  left: 8px;
+}
+
+.delete-btn {
+  right: 8px;
+}
+
+.check-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #22c55e;
+}
+
+.todo-list ul li.completed .check-btn:hover {
+  color: #f59e0b;
+}
+
+.delete-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #ef4444;
+}
+
+.todo-list ul li:hover .priority-dot {
+  visibility: hidden;
+}
+
+.todo-list ul li:hover .check-btn {
+  display: flex;
+}
+
+.todo-list ul li:hover .todo-date {
+  visibility: hidden;
+}
+
+.todo-list ul li:hover .delete-btn {
+  display: flex;
+}
+
+.todo-list ul li.completed .todo-text {
+  text-decoration: line-through;
+  color: #a8a29e;
+}
+
+.todo-date {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #a8a29e;
+  font-variant-numeric: tabular-nums;
 }
 </style>
