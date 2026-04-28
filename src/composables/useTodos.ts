@@ -1,22 +1,21 @@
-import type { Priority } from '@/lib/types'
+import { ref } from 'vue'
+import type { FilterStatus, FilterPriority, Priority } from '@/lib/types'
 import { store } from '@/lib/store'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+
+const UNDO_WINDOW = 10_000
 
 export function useTodos() {
   const newTodo = ref('')
   const selectPriority = ref<Priority>('medium')
-  const filter = ref<'all' | 'active' | 'completed'>('all')
-  const priorityFilter = ref<'all' | Priority>('all')
 
   const filteredTodos = computed(() => {
     let result = store.todos
 
-    if (filter.value === 'active') result = result.filter((t) => !t.completed)
-    else if (filter.value === 'completed') result = result.filter((t) => t.completed)
+    if (store.filter === 'active') result = result.filter((t) => !t.completed)
+    else if (store.filter === 'completed') result = result.filter((t) => t.completed)
 
-    if (priorityFilter.value !== 'all') {
-      result = result.filter((t) => t.priority === priorityFilter.value)
-    }
+    if (store.priorityFilter !== 'all') result = result.filter((t) => t.priority === store.priorityFilter)
 
     return result
   })
@@ -31,7 +30,6 @@ export function useTodos() {
       priority: selectPriority.value,
       createdAt: new Date(),
     })
-
     newTodo.value = ''
   }
 
@@ -44,5 +42,47 @@ export function useTodos() {
     store.todos = store.todos.filter((t) => t.id !== id)
   }
 
-  return { todos: store.todos, filteredTodos, newTodo, selectPriority, filter, priorityFilter, addTodo, toggleTodo, deleteTodo }
+  function archiveTodo(id: number) {
+    const todo = store.todos.find((t) => t.id === id)
+    if (todo) todo.archivedAt = Date.now()
+  }
+
+  function archiveAllCompleted() {
+    store.todos.forEach((t) => {
+      if (t.completed) t.archivedAt = Date.now()
+    })
+  }
+
+  function restoreTodo(id: number) {
+    const todo = store.todos.find((t) => t.id === id)
+    if (todo) delete todo.archivedAt
+  }
+
+  function isUndoable(id: number): boolean {
+    const todo = store.todos.find((t) => t.id === id)
+    if (!todo?.archivedAt) return false
+    return Date.now() - todo.archivedAt < UNDO_WINDOW
+  }
+
+  return {
+    todos: store.todos,
+    filteredTodos,
+    newTodo,
+    selectPriority,
+    filter: computed({
+      get: () => store.filter,
+      set: (v: FilterStatus) => (store.filter = v),
+    }),
+    priorityFilter: computed({
+      get: () => store.priorityFilter,
+      set: (v: FilterPriority) => (store.priorityFilter = v),
+    }),
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    archiveTodo,
+    archiveAllCompleted,
+    restoreTodo,
+    isUndoable,
+  }
 }

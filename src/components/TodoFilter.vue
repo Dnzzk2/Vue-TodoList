@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { Priority } from '@/lib/types'
-import { priorityList } from '@/lib/constants'
+import { priorityList, statusOptions } from '@/lib/constants'
 
 const filter = defineModel<'all' | 'active' | 'completed'>('filter', { required: true })
 const priorityFilter = defineModel<'all' | Priority>('priorityFilter', { required: true })
 
-const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] = [
-  { value: 'all', label: '全部' },
-  { value: 'active', label: '进行中' },
-  { value: 'completed', label: '已完成' },
-]
+const props = defineProps<{ hasCompleted: boolean }>()
+
+const emit = defineEmits<{
+  archive: []
+}>()
 </script>
 
 <template>
@@ -24,25 +24,50 @@ const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] 
         {{ opt.label }}
       </button>
     </div>
-    <div class="priority-filters">
+    <div class="right-group">
       <button
-        class="priority-dot-btn"
-        :class="{ active: priorityFilter === 'all' }"
-        title="全部优先级"
-        @click="priorityFilter = 'all'"
+        v-if="hasCompleted && (filter === 'all' || filter === 'completed')"
+        class="archive-btn"
+        title="归档所有已完成任务"
+        @click="emit('archive')"
       >
-        <span class="ring" style="--ring-color: #a8a29e"></span>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+          ></path>
+        </svg>
+        归档
       </button>
-      <button
-        v-for="opt in priorityList"
-        :key="opt.value"
-        class="priority-dot-btn"
-        :class="{ active: priorityFilter === opt.value }"
-        :title="opt.label + '优先级'"
-        @click="priorityFilter = opt.value"
-      >
-        <span class="ring" :style="{ '--ring-color': opt.color }"></span>
-      </button>
+      <div class="priority-filters">
+        <button
+          class="priority-dot-btn"
+          :class="{ active: priorityFilter === 'all' }"
+          title="全部优先级"
+          @click="priorityFilter = 'all'"
+        >
+          <span class="ring" style="--ring-color: #a8a29e"></span>
+        </button>
+        <button
+          v-for="opt in priorityList"
+          :key="opt.value"
+          class="priority-dot-btn"
+          :class="{ active: priorityFilter === opt.value }"
+          :title="opt.label + '优先级'"
+          @click="priorityFilter = opt.value"
+        >
+          <span class="ring" :style="{ '--ring-color': opt.color }"></span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -61,6 +86,8 @@ const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] 
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: all 0.25s ease;
   margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .filter-bar:hover {
@@ -85,6 +112,7 @@ const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] 
   cursor: pointer;
   transition: all 0.2s ease;
   line-height: 1.4;
+  white-space: nowrap;
 }
 
 .status-btn:hover {
@@ -95,6 +123,36 @@ const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] 
 .status-btn.active {
   color: #1c1917;
   background: rgba(0, 0, 0, 0.05);
+}
+
+/* 右侧区域 */
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.archive-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.archive-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #4f46e5;
 }
 
 /* 优先级圆环 */
@@ -134,5 +192,12 @@ const statusOptions: { value: 'all' | 'active' | 'completed'; label: string }[] 
 
 .priority-dot-btn.active .ring {
   background: var(--ring-color);
+}
+
+/* 移动端：折叠成两行 */
+@media (max-width: 480px) {
+  .archive-btn {
+    display: none;
+  }
 }
 </style>

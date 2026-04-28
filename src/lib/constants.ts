@@ -1,4 +1,4 @@
-import type { Priority } from './types'
+import type { Priority, FilterStatus } from './types'
 
 export const priorityList: { value: Priority; label: string; color: string }[] = [
   { value: 'high', label: '高', color: '#ef4444' },
@@ -9,3 +9,9 @@ export const priorityList: { value: Priority; label: string; color: string }[] =
 export function getPriorityColor(priority: Priority) {
   return priorityList.find((p) => p.value === priority)!.color
 }
+
+export const statusOptions: { value: FilterStatus; label: string }[] = [
+  { value: 'all', label: '全部' },
+  { value: 'active', label: '进行中' },
+  { value: 'completed', label: '已完成' },
+]

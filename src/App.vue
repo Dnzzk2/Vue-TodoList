@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useTodos } from './composables/useTodos'
+import { store } from './lib/store'
 import TodoInput from './components/TodoInput.vue'
 import TodoFilter from './components/TodoFilter.vue'
 import TodoList from './components/TodoList.vue'
@@ -13,7 +15,15 @@ const {
   addTodo,
   toggleTodo,
   deleteTodo,
+  archiveTodo,
+  restoreTodo,
+  archiveAllCompleted,
 } = useTodos()
+
+// 有已完成未归档的任务时显示归档按钮
+const hasCompleted = computed(() =>
+  store.todos.some((t) => t.completed && !t.archivedAt)
+)
 </script>
 
 <template>
@@ -30,11 +40,15 @@ const {
       <TodoFilter
         v-model:filter="filter"
         v-model:priority-filter="priorityFilter"
+        :has-completed="hasCompleted"
+        @archive="archiveAllCompleted"
       />
       <TodoList
         :todos="filteredTodos"
         @delete="deleteTodo"
         @toggle="toggleTodo"
+        @archive="archiveTodo"
+        @restore="restoreTodo"
       />
     </div>
   </main>

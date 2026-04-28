@@ -6,6 +6,8 @@ defineProps<{ todos: Todo[] }>()
 const emit = defineEmits<{
   toggle: [id: number]
   delete: [id: number]
+  archive: [id: number]
+  restore: [id: number]
 }>()
 </script>
 
@@ -18,6 +20,8 @@ const emit = defineEmits<{
         :todo="todo"
         @toggle="emit('toggle', $event)"
         @delete="emit('delete', $event)"
+        @archive="emit('archive', $event)"
+        @restore="emit('restore', $event)"
       />
     </TransitionGroup>
   </div>
@@ -27,10 +31,9 @@ const emit = defineEmits<{
 .todo-list ul {
   list-style: none;
   text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   position: relative;
+  padding: 0;
+  list-style-type: none;
 }
 
 /* TransitionGroup 动画 */
