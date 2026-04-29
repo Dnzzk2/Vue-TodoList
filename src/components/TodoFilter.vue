@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Priority } from '@/lib/types'
 import { priorityList, statusOptions } from '@/lib/constants'
+import IconArchive from './icons/IconArchive.vue'
 
 const filter = defineModel<'all' | 'active' | 'completed'>('filter', { required: true })
 const priorityFilter = defineModel<'all' | Priority>('priorityFilter', { required: true })
@@ -31,21 +32,7 @@ const emit = defineEmits<{
         title="归档所有已完成任务"
         @click="emit('archive')"
       >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path
-            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
-          ></path>
-        </svg>
+        <IconArchive :size="13" />
         归档
       </button>
       <div class="priority-filters">
@@ -92,7 +79,7 @@ const emit = defineEmits<{
 
 .filter-bar:hover {
   border-color: #d6d3d1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 /* 状态筛选 */
@@ -135,7 +122,7 @@ const emit = defineEmits<{
 
 .archive-btn {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
   padding: 4px 8px;
   font-size: 0.72rem;

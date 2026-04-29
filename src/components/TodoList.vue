@@ -1,8 +1,29 @@
 <script setup lang="ts">
 import type { Todo } from '@/lib/types'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import TodoItem from './TodoItem.vue'
 
-defineProps<{ todos: Todo[] }>()
+const UNDO_WINDOW = 10_000
+
+const props = defineProps<{ todos: Todo[] }>()
+
+const now = ref(Date.now())
+let timer: ReturnType<typeof setInterval> | null = null
+
+onMounted(() => {
+  timer = setInterval(() => {
+    now.value = Date.now()
+  }, 200)
+})
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
+const activeTodos = computed(() =>
+  props.todos.filter((t) => !t.archivedAt || now.value - t.archivedAt < UNDO_WINDOW),
+)
+
 const emit = defineEmits<{
   toggle: [id: number]
   delete: [id: number]
@@ -15,7 +36,7 @@ const emit = defineEmits<{
   <div class="todo-list">
     <TransitionGroup name="todo" tag="ul">
       <TodoItem
-        v-for="todo in todos"
+        v-for="todo in activeTodos"
         :key="todo.id"
         :todo="todo"
         @toggle="emit('toggle', $event)"

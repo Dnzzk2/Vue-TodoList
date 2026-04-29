@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/util'
 import IconCheck from './icons/IconCheck.vue'
 import IconUndo from './icons/IconUndo.vue'
 import IconClose from './icons/IconClose.vue'
+import IconArchive from './icons/IconArchive.vue'
 
 const props = defineProps<{ todo: Todo }>()
 const emit = defineEmits<{
@@ -86,10 +87,7 @@ const undoProgress = computed(() => {
       title="归档"
       @click="emit('archive', todo.id)"
     >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-      </svg>
+      <IconArchive :size="13" />
     </button>
     <button class="delete-btn" title="删除" @click="emit('delete', todo.id)">
       <IconClose />
@@ -127,9 +125,6 @@ li:hover {
   background: rgba(255, 255, 255, 0.9);
 }
 
-li.archived {
-  opacity: 0.6;
-}
 
 /* 归档进度条 */
 .undo-progress-bar {
