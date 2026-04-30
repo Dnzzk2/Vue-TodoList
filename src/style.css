@@ -1,5 +1,9 @@
+@import url('https://fontsapi.zeoseven.com/292/main/result.css');
+@import url('https://fontsapi.zeoseven.com/293/main/result.css');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: 'LXGW WenKai', ui-sans-serif, system-ui, sans-serif;
 }
