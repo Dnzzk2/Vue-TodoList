@@ -19,16 +19,59 @@ const emit = defineEmits<{
 const UNDO_WINDOW = 10_000
 
 const now = ref(Date.now())
+const itemRef = ref<HTMLElement | null>(null)
+const isActionOpen = ref(false)
+const isTouchMode = ref(false)
 let timer: ReturnType<typeof setInterval> | null = null
+let mediaQueryList: MediaQueryList | null = null
+
+function updateTouchMode() {
+  if (!window.matchMedia) return
+  mediaQueryList = window.matchMedia('(hover: none), (pointer: coarse)')
+  isTouchMode.value = mediaQueryList.matches
+}
+
+function handleActionOpen(event: MouseEvent) {
+  if (!isTouchMode.value) return
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  if (target.closest('button')) return
+  isActionOpen.value = true
+}
+
+function handleClickOutside(event: Event) {
+  if (!isTouchMode.value || !isActionOpen.value || !itemRef.value) return
+  const target = event.target
+  if (!(target instanceof Node)) return
+  if (!itemRef.value.contains(target)) {
+    isActionOpen.value = false
+  }
+}
+
+function closeActionLayer() {
+  if (isTouchMode.value) {
+    isActionOpen.value = false
+  }
+}
 
 onMounted(() => {
   timer = setInterval(() => {
     now.value = Date.now()
   }, 200)
+
+  updateTouchMode()
+  if (mediaQueryList) {
+    mediaQueryList.addEventListener('change', updateTouchMode)
+  }
+  document.addEventListener('pointerdown', handleClickOutside)
 })
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
+  if (mediaQueryList) {
+    mediaQueryList.removeEventListener('change', updateTouchMode)
+  }
+  document.removeEventListener('pointerdown', handleClickOutside)
 })
 
 function isUndoable() {
@@ -44,7 +87,11 @@ const undoProgress = computed(() => {
 </script>
 
 <template>
-  <li :class="{ completed: todo.completed, archived: !!todo.archivedAt }">
+  <li
+    ref="itemRef"
+    :class="{ completed: todo.completed, archived: !!todo.archivedAt, 'actions-open': isActionOpen }"
+    @click="handleActionOpen"
+  >
     <!-- 撤销进度条 -->
     <div v-if="isUndoable()" class="undo-progress-bar">
       <div class="undo-progress-fill" :style="{ width: undoProgress * 100 + '%' }"></div>
@@ -54,7 +101,7 @@ const undoProgress = computed(() => {
     <button
       class="check-btn"
       :title="todo.completed ? '撤回' : '完成'"
-      @click="emit('toggle', todo.id)"
+      @click="emit('toggle', todo.id); closeActionLayer()"
     >
       <IconCheck v-if="!todo.completed" />
       <IconUndo v-else />
@@ -65,7 +112,7 @@ const undoProgress = computed(() => {
       v-if="isUndoable()"
       class="restore-btn"
       title="撤销归档（可撤销10秒）"
-      @click="emit('restore', todo.id)"
+      @click="emit('restore', todo.id); closeActionLayer()"
     >
       <svg
         width="13"
@@ -85,11 +132,11 @@ const undoProgress = computed(() => {
       v-else-if="todo.completed && !todo.archivedAt"
       class="archive-btn"
       title="归档"
-      @click="emit('archive', todo.id)"
+      @click="emit('archive', todo.id); closeActionLayer()"
     >
       <IconArchive :size="13" />
     </button>
-    <button class="delete-btn" title="删除" @click="emit('delete', todo.id)">
+    <button class="delete-btn" title="删除" @click="emit('delete', todo.id); closeActionLayer()">
       <IconClose />
     </button>
   </li>
@@ -228,26 +275,32 @@ li.completed .check-btn:hover {
   color: #ef4444;
 }
 
-li:hover .priority-dot {
+li:hover .priority-dot,
+li.actions-open .priority-dot {
   opacity: 0;
 }
 
-li:hover .check-btn {
+li:hover .check-btn,
+li.actions-open .check-btn {
   opacity: 1;
   pointer-events: auto;
 }
 
-li:hover .todo-date {
+li:hover .todo-date,
+li.actions-open .todo-date {
   opacity: 0;
 }
 
 li:hover .restore-btn,
-li:hover .archive-btn {
+li:hover .archive-btn,
+li.actions-open .restore-btn,
+li.actions-open .archive-btn {
   opacity: 1;
   pointer-events: auto;
 }
 
-li:hover .delete-btn {
+li:hover .delete-btn,
+li.actions-open .delete-btn {
   opacity: 1;
   pointer-events: auto;
 }

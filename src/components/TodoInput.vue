@@ -58,6 +58,7 @@ const emit = defineEmits<{ add: [] }>()
   box-sizing: border-box;
 }
 
+
 .input-wrapper input[type='text']::placeholder {
   color: #a8a29e;
   font-weight: 400;
