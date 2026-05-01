@@ -37,13 +37,12 @@ const emit = defineEmits<{ add: [] }>()
 
 <style scoped>
 .input-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
   margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
   border: 1px solid #e7e5e4;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -51,11 +50,28 @@ const emit = defineEmits<{ add: [] }>()
   overflow: hidden;
 }
 
+.input-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+
 .input-wrapper:focus-within {
   border-color: #6366f1;
   box-shadow:
     0 0 0 3px rgba(99, 102, 241, 0.15),
     0 2px 12px rgba(99, 102, 241, 0.1);
+}
+
+.input-wrapper > * {
+  position: relative;
+  z-index: 1;
 }
 
 .input-wrapper input[type='text'] {

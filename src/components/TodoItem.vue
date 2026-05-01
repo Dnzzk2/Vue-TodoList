@@ -145,12 +145,14 @@ const undoProgress = computed(() => {
 <style scoped>
 li {
   position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   padding: 10px 12px;
+  margin-bottom: 6px;
   font-size: 0.875rem;
   color: #1c1917;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid #e7e5e4;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -158,18 +160,33 @@ li {
   user-select: none;
   cursor: pointer;
   transition: all 0.25s ease;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-  overflow: hidden;
+  overflow: visible;
+}
+
+li::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
 }
 
 li:hover {
   border-color: #d6d3d1;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+li:hover::before {
   background: rgba(255, 255, 255, 0.9);
+}
+
+li > *:not(.undo-progress-bar):not(.check-btn):not(.restore-btn):not(.archive-btn):not(.delete-btn) {
+  position: relative;
+  z-index: 1;
 }
 
 
