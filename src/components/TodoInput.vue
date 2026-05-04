@@ -146,4 +146,16 @@ const emit = defineEmits<{ add: [] }>()
 .priority-flag.active {
   background: rgba(0, 0, 0, 0.06);
 }
+
+@media (max-width: 480px) {
+  .priority {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .input-wrapper input[type='text'] {
+    min-width: 0;
+    flex: 1;
+    padding: 10px 4px;
+  }
+}
 </style>
