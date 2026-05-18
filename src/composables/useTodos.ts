@@ -49,7 +49,7 @@ export function useTodos() {
 
   function archiveAllCompleted() {
     store.todos.forEach((t) => {
-      if (t.completed) t.archivedAt = Date.now()
+      if (t.completed && !t.archivedAt) t.archivedAt = Date.now()
     })
   }
 

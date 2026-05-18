@@ -160,7 +160,7 @@ li {
   user-select: none;
   cursor: pointer;
   transition: all 0.25s ease;
-  overflow: visible;
+  overflow: hidden;
 }
 
 li::before {
